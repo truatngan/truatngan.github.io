@@ -71,6 +71,13 @@
   .ios small{color:rgba(255,255,255,.65);font-size:12.5px}
   .ios .k{display:inline-block;padding:0 7px;border-radius:7px;background:rgba(255,255,255,.14);font-weight:700;white-space:nowrap}
   .ios button{position:absolute;top:8px;right:8px;width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:18px;line-height:1;cursor:pointer}
+  /* ปุ่มขออนุญาตแจ้งเตือน (ต้องกดในหน้านี้ ไม่ใช่ในกรอบแอป) */
+  .npush{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:21;max-width:440px;margin:0 auto;background:#10131A;color:#fff;border-radius:20px;padding:14px;display:flex;gap:12px;align-items:center;font:500 14px/1.5 system-ui,-apple-system,sans-serif;box-shadow:0 18px 40px -14px rgba(0,0,0,.55);animation:rise .45s cubic-bezier(.2,.9,.2,1) both}
+  .npush div{flex:1}
+  .npush b{font-weight:700}
+  .npush button{border:none;border-radius:12px;padding:10px 14px;font:700 14px system-ui,-apple-system,sans-serif;cursor:pointer}
+  .npush .y{background:#C8F03C;color:#10131A}
+  .npush .n{background:rgba(255,255,255,.12);color:#fff}
   @media (prefers-reduced-motion:reduce){.splash *,.splash *::after{animation:none!important}.splash{transition:opacity .2s}}
 </style>
 </head>
@@ -114,6 +121,37 @@
       d.querySelector('button').onclick = function () { try { localStorage.setItem('gt_ios_tip', '1'); } catch (e) {} d.remove(); };
       document.body.appendChild(d);
     }, 3500);
+  })();
+  // แจ้งเตือนบนมือถือ (OneSignal): แอปในกรอบบอกว่าใครเข้าสู่ระบบ → ผูกเครื่องนี้กับคนนั้น
+  (function () {
+    var loaded = false, cur = '';
+    function sdk(app, cb) {
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      if (!loaded) {
+        loaded = true;
+        var s = document.createElement('script'); s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js'; s.defer = true; document.head.appendChild(s);
+        OneSignalDeferred.push(function (OS) { return OS.init({ appId: app, serviceWorkerPath: 'OneSignalSDKWorker.js', serviceWorkerParam: { scope: '/' } }); });
+      }
+      OneSignalDeferred.push(cb);
+    }
+    function ask(OS) {
+      var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (!('Notification' in window) || Notification.permission !== 'default') return;
+      if (ios && !navigator.standalone) return; // iPhone: ต้องเปิดจากไอคอนบนหน้าจอโฮมก่อน
+      var later = 0; try { later = +localStorage.getItem('gt_push_later') || 0; } catch (e) {}
+      if (Date.now() - later < 3 * 86400000 || document.querySelector('.npush')) return;
+      var d = document.createElement('div'); d.className = 'npush'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'เปิดการแจ้งเตือน');
+      d.innerHTML = '<div><b>เปิดการแจ้งเตือน</b><br>รู้ทันทีเมื่อมีงานใหม่ คะแนนออก หรืออาจารย์ตอบ</div><button type="button" class="n">ไว้ก่อน</button><button type="button" class="y">เปิด</button>';
+      d.querySelector('.y').onclick = function () { d.remove(); OS.Notifications.requestPermission(); };
+      d.querySelector('.n').onclick = function () { try { localStorage.setItem('gt_push_later', String(Date.now())); } catch (e) {} d.remove(); };
+      document.body.appendChild(d);
+    }
+    window.addEventListener('message', function (e) {
+      if (!/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com$/.test(String(e.origin))) return;
+      var m = e.data || {};
+      if (m.gt === 'push' && m.app && m.id && m.id !== cur) { cur = m.id; sdk(m.app, function (OS) { return OS.login(m.id).then(function () { ask(OS); }); }); }
+      else if (m.gt === 'push-logout' && cur) { cur = ''; if (loaded) OneSignalDeferred.push(function (OS) { return OS.logout(); }); }
+    });
   })();
 </script>
 </body>
