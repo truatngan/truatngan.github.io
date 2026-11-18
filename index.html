@@ -61,6 +61,12 @@
   @keyframes twChk{0%,47.5%{stroke-dashoffset:24}51%,96%{stroke-dashoffset:0}100%{stroke-dashoffset:24}}
   @keyframes twBob{0%{transform:translateY(0)}1.83%{transform:translateY(-3px)}3.67%{transform:translateY(0)}5.50%{transform:translateY(-3px)}7.33%{transform:translateY(0)}9.17%{transform:translateY(-3px)}11.00%{transform:translateY(0)}12.83%{transform:translateY(-3px)}14.67%{transform:translateY(0)}16.50%{transform:translateY(-3px)}18.33%{transform:translateY(0)}20.17%{transform:translateY(-3px)}22.00%{transform:translateY(0)}23.83%{transform:translateY(-3px)}25.67%{transform:translateY(0)}27.50%{transform:translateY(-3px)}29.33%{transform:translateY(0)}31.17%{transform:translateY(-3px)}33.00%{transform:translateY(0)}34.83%{transform:translateY(-3px)}36.67%{transform:translateY(0)}38.50%{transform:translateY(-3px)}40.33%{transform:translateY(0)}42.17%{transform:translateY(-3px)}44.00%{transform:translateY(0)}57.83%{transform:translateY(-3px)}59.67%{transform:translateY(0)}61.50%{transform:translateY(-3px)}63.33%{transform:translateY(0)}65.17%{transform:translateY(-3px)}67.00%{transform:translateY(0)}68.83%{transform:translateY(-3px)}70.67%{transform:translateY(0)}72.50%{transform:translateY(-3px)}74.33%{transform:translateY(0)}76.17%{transform:translateY(-3px)}78.00%{transform:translateY(0)}79.83%{transform:translateY(-3px)}81.67%{transform:translateY(0)}83.50%{transform:translateY(-3px)}85.33%{transform:translateY(0)}87.17%{transform:translateY(-3px)}89.00%{transform:translateY(0)}90.83%{transform:translateY(-3px)}92.67%{transform:translateY(0)}94.50%{transform:translateY(-3px)}96.33%{transform:translateY(0)}98.17%{transform:translateY(-3px)}100.00%{transform:translateY(0)}}
   @media (prefers-reduced-motion:reduce){.tw *{animation:none!important}.tw-chk{stroke-dashoffset:0}}
+  /* iPhone/iPad: แนะนำวิธีติดตั้งเป็นแอปบนหน้าจอโฮม */
+  .ios{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:20;max-width:440px;margin:0 auto;background:#10131A;color:#fff;border-radius:20px;padding:14px 46px 14px 14px;display:flex;gap:12px;align-items:center;font:500 14px/1.55 system-ui,-apple-system,sans-serif;box-shadow:0 18px 40px -14px rgba(0,0,0,.55);animation:rise .45s cubic-bezier(.2,.9,.2,1) both}
+  .ios img{width:44px;height:44px;border-radius:11px;flex:none}
+  .ios b{font-weight:700}
+  .ios svg{vertical-align:-4px}
+  .ios button{position:absolute;top:8px;right:8px;width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:18px;line-height:1;cursor:pointer}
   @media (prefers-reduced-motion:reduce){.splash *,.splash *::after{animation:none!important}.splash{transition:opacity .2s}}
 </style>
 </head>
@@ -89,6 +95,18 @@
   document.body.appendChild(f);
   setTimeout(function () { var s = document.getElementById('slow'); if (s) s.classList.add('on'); }, 7000);
   setTimeout(function () { if (document.getElementById('splash')) hide(); }, 20000);
+  // iPhone/iPad ที่เปิดใน Safari (ยังไม่ได้ติดตั้ง): บอกวิธีเพิ่มไปยังหน้าจอโฮม — ปิดแล้วไม่ขึ้นอีก
+  (function () {
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var seen = false; try { seen = !!localStorage.getItem('gt_ios_tip'); } catch (e) {}
+    if (!ios || navigator.standalone || seen) return;
+    setTimeout(function () {
+      var d = document.createElement('div'); d.className = 'ios'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'ติดตั้งแอปตรวจงาน');
+      d.innerHTML = '<img src="apple-touch-icon.png" alt=""><div><b>ติดตั้งเป็นแอปบน iPhone</b><br>กด <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8F03C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="ปุ่มแชร์"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> แล้วเลือก <b>เพิ่มไปยังหน้าจอโฮม</b></div><button type="button" aria-label="ปิด">×</button>';
+      d.querySelector('button').onclick = function () { try { localStorage.setItem('gt_ios_tip', '1'); } catch (e) {} d.remove(); };
+      document.body.appendChild(d);
+    }, 3500);
+  })();
 </script>
 </body>
 </html>
