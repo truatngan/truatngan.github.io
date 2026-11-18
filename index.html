@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ตรวจงาน</title>
+<meta name="theme-color" content="#2F6BFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ตรวจงาน">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  html,body{margin:0;height:100%;background:#fff}
+  iframe{position:fixed;inset:0;width:100%;height:100%;height:100dvh;border:0;display:block}
+  .wait{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font:600 16px system-ui,sans-serif;color:#5A6275}
+</style>
+</head>
+<body>
+<div class="wait">กำลังเปิดแอป…</div>
+<script>
+  // ลิงก์แอป (Apps Script) — อัปเดตแอปภายหลังไม่ต้องแก้ไฟล์นี้ ตราบใดที่ใช้การทำให้ใช้งานได้รายการเดิม
+  var APP = 'https://script.google.com/macros/s/AKfycbzGbc98YM6NdQiTpFpArcY35NSgtgOpQoKGchcwJQ83wYHeSxLJ5l3Ocbim5j11FAVE/exec';
+  var f = document.createElement('iframe');
+  f.src = APP + location.search; // ส่งต่อ ?join=รหัสเข้าห้อง และ ?view=teacher
+  f.title = 'ตรวจงาน';
+  f.allow = 'microphone; camera; clipboard-write; fullscreen';
+  document.body.appendChild(f);
+</script>
+</body>
+</html>
